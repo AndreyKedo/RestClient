@@ -2,14 +2,14 @@ import 'dart:async';
 
 import 'json_parser.dart';
 
-final class WebJsonParser with SyncJsonCodecMixin implements JsonParser {
+final class WebJsonParser with JsonCodecMixin implements JsonParser {
   static const WebJsonParser _internalSingleton = WebJsonParser._internal();
   factory WebJsonParser() => _internalSingleton;
   const WebJsonParser._internal();
 
   @override
   @pragma('dart2js:tryInline')
-  Future<Map<String, Object?>> strDecodeJson(String data, {bool useIsolate = false, String? debugPrint}) async {
+  Future<Map<String, Object?>> decode(String data, {bool useIsolate = false, String? debugPrint}) async {
     // From flutter/foundation/_isolates_web.dart
     //
     // To avoid blocking the UI immediately for an expensive function call, we
@@ -17,12 +17,12 @@ final class WebJsonParser with SyncJsonCodecMixin implements JsonParser {
     // of work.
 
     await Future<void>.delayed(Duration.zero);
-    return strDecodeJson(data);
+    return decode(data);
   }
 
   @override
   @pragma('dart2js:tryInline')
-  Future<String> objEncode(Map<String, Object?> data, {bool useIsolate = false, String? debugPrint}) async {
+  Future<String> encode(Map<String, Object?> data, {bool useIsolate = false, String? debugPrint}) async {
     // From flutter/foundation/_isolates_web.dart
     //
     // To avoid blocking the UI immediately for an expensive function call, we
@@ -30,7 +30,7 @@ final class WebJsonParser with SyncJsonCodecMixin implements JsonParser {
     // of work.
 
     await Future<void>.delayed(Duration.zero);
-    return objEncodeSync(data);
+    return encodeObject(data);
   }
 }
 

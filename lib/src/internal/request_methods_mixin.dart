@@ -68,7 +68,7 @@ base mixin _RequestAPI on _InterceptorAPI implements _IRestMethods {
     final request = StreamedRequest('POST', buildUri(path: api, queryParams: queryParameters));
 
     request.headers.addAll(await _headers);
-    final bodyBytes = await JsonParser().objEncode(body);
+    final bodyBytes = await JsonParser().encode(body);
     final converted = utf8.encode(bodyBytes);
 
     request.contentLength = converted.length;

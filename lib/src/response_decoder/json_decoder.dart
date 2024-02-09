@@ -7,7 +7,7 @@ final class JsonDecodeStrategy extends ResponseDecodeStrategy {
   FutureOr<RCResponse> decoder(Response response) async {
     final body = response.body;
 
-    final Map<String, Object?> result = await JsonParser().strDecodeJson(body, useIsolate: body.length > 1000);
+    final Map<String, Object?> result = await JsonParser().decode(body);
 
     final statusCode = response.statusCode;
 

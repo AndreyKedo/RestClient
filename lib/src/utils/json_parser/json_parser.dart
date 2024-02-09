@@ -1,12 +1,8 @@
 import 'dart:convert';
 
-import 'stub.dart'
-    // ignore: uri_does_not_exist
-    if (dart.library.html) 'web.dart'
-    // ignore: uri_does_not_exist
-    if (dart.library.io) 'io.dart';
+import 'io.dart' if (dart.library.html) 'web.dart';
 
-abstract class JsonParser with SyncJsonCodecMixin {
+abstract class JsonParser with JsonCodecMixin {
   factory JsonParser() => getParser();
 
   static const JsonCodec jsonCodec = JsonCodec(reviver: _reviver);
@@ -17,13 +13,13 @@ abstract class JsonParser with SyncJsonCodecMixin {
     return value;
   }
 
-  Future<Map<String, Object?>> strDecodeJson(String data, {bool useIsolate = false, String? debugPrint});
+  Future<Map<String, Object?>> decode(String data, {String? debugPrint});
 
-  Future<String> objEncode(Map<String, Object?> data, {bool useIsolate = false, String? debugPrint});
+  Future<String> encode(Map<String, Object?> data, {String? debugPrint});
 }
 
-mixin class SyncJsonCodecMixin {
-  String objEncodeSync(Map<String, Object?> obj) => JsonParser.jsonCodec.encode(obj);
+mixin class JsonCodecMixin {
+  String encodeObject(Map<String, Object?> obj) => JsonParser.jsonCodec.encode(obj);
 
-  Map<String, Object?> strDecodeJsonSync(String json) => JsonParser.jsonCodec.decode(json) as Map<String, Object?>;
+  Map<String, Object?> decodeString(String json) => JsonParser.jsonCodec.decode(json) as Map<String, Object?>;
 }

@@ -70,7 +70,7 @@ base mixin _InterceptorAPI on _ClientBuilderAPI {
             case BytesBody(value: Uint8List val):
               request.bodyBytes = val;
             case JsonMapBody(value: Map<String, Object?> val):
-              request.body = await JsonParser().objEncode(val, useIsolate: true, debugPrint: 'Json encode');
+              request.body = await JsonParser().encode(val, debugPrint: 'Json encode');
             case StringBody(value: String val):
               request.body = val;
           }

@@ -54,7 +54,7 @@ base class JwtDecoder {
 
     final str = utf8.decode(base64.decode(normalized));
 
-    final decodedSegment = JsonParser().strDecodeJsonSync(str);
+    final decodedSegment = JsonParser().decodeString(str);
     return decodedSegment;
   }
 }

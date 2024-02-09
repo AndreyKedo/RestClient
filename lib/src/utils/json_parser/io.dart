@@ -3,7 +3,9 @@ import 'dart:isolate';
 
 import 'json_parser.dart';
 
-final class IOJsonParser with SyncJsonCodecMixin implements JsonParser {
+JsonParser getParser() => IOJsonParser();
+
+final class IOJsonParser with JsonCodecMixin implements JsonParser {
   static const IOJsonParser _internalSingleton = IOJsonParser._internal();
   factory IOJsonParser() => _internalSingleton;
 
@@ -11,24 +13,23 @@ final class IOJsonParser with SyncJsonCodecMixin implements JsonParser {
 
   @override
   @pragma('vm:prefer-inline')
-  Future<Map<String, Object?>> strDecodeJson(String data, {bool useIsolate = false, String? debugPrint}) async {
-    if (useIsolate) {
-      return Isolate.run<Map<String, Object?>>(() => strDecodeJsonSync(data), debugName: debugPrint);
+  Future<Map<String, Object?>> decode(String data, {String? debugPrint}) async {
+    if (data.length > 1000) {
+      return Isolate.run<Map<String, Object?>>(() => decodeString(data), debugName: debugPrint);
     }
     await Future<void>.delayed(Duration.zero);
-    return strDecodeJsonSync(data);
+    return decodeString(data);
   }
 
   @override
   @pragma('vm:prefer-inline')
-  Future<String> objEncode(Map<String, Object?> data, {bool useIsolate = false, String? debugPrint}) async {
-    if (useIsolate) {
-      return Isolate.run<String>(() => objEncodeSync(data), debugName: debugPrint);
+  Future<String> encode(Map<String, Object?> data, {String? debugPrint}) async {
+    if (data.length > 15) {
+      // TODO(Andrey): need check depth
+      return Isolate.run<String>(() => encodeObject(data), debugName: debugPrint);
     }
 
     await Future<void>.delayed(Duration.zero);
-    return objEncodeSync(data);
+    return encodeObject(data);
   }
 }
-
-JsonParser getParser() => IOJsonParser();
