@@ -1,25 +1,27 @@
 import 'dart:convert';
 
-import 'io.dart' if (dart.library.html) 'web.dart';
+import 'vm.dart' if (dart.library.js_interop) 'js.dart';
 
-abstract class JsonParser with JsonCodecMixin {
+/// {@template json_parser}
+/// Json parser.
+/// {@endtemplate}
+abstract class JsonParser {
   factory JsonParser() => getParser();
 
+  /// Default codec.
   static const JsonCodec jsonCodec = JsonCodec(reviver: _reviver);
 
   static Object? _reviver(Object? key, Object? value) {
-    if (value is List<dynamic>) return value.cast<Object>();
-    if (value is Map<String, Object?>) return value.cast<String, Object?>();
+    if (value is List<dynamic>) return List<Object>.from(value);
+    if (value is Map<String, dynamic>) return Map<String, Object?>.from(value);
     return value;
   }
 
-  Future<Map<String, Object?>> decode(String data, {String? debugPrint});
+  /// Decode json string to [Map]
+  /// [useIsolate] set true if you want use isolate.
+  Future<Map<String, Object?>> strDecodeJson(String data, {bool useIsolate = false, String? debugPrint});
 
-  Future<String> encode(Map<String, Object?> data, {String? debugPrint});
-}
-
-mixin class JsonCodecMixin {
-  String encodeObject(Map<String, Object?> obj) => JsonParser.jsonCodec.encode(obj);
-
-  Map<String, Object?> decodeString(String json) => JsonParser.jsonCodec.decode(json) as Map<String, Object?>;
+  /// Encode [Map] to JSON string.
+  /// [useIsolate] set true if you want use isolate.
+  Future<String> objEncode(Map<String, Object?> data, {bool useIsolate = false, String? debugPrint});
 }

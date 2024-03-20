@@ -1,4 +1,12 @@
+/*
+* body.dart
+* Request body.
+* Dashkevich Andrey <dashkevich@ittest-team.ru>, 20 March 2024
+*/
+
 import 'dart:typed_data';
+
+import 'package:collection/collection.dart';
 
 sealed class RequestBody {
   const RequestBody();
@@ -17,6 +25,13 @@ final class StringBody extends RequestBody {
 
   @override
   String toString() => 'BytesBody($value)';
+
+  @override
+  int get hashCode => Object.hash(value, toString());
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || other is StringBody && runtimeType == other.runtimeType && value == other.value;
 }
 
 final class BytesBody extends RequestBody {
@@ -25,6 +40,13 @@ final class BytesBody extends RequestBody {
 
   @override
   String toString() => 'BytesBody($value)';
+
+  @override
+  int get hashCode => Object.hash(value, toString());
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || other is StringBody && runtimeType == other.runtimeType && value == other.value;
 }
 
 final class JsonMapBody extends RequestBody {
@@ -33,4 +55,14 @@ final class JsonMapBody extends RequestBody {
 
   @override
   String toString() => 'JsonMapBody($value)';
+
+  static const _equality = DeepCollectionEquality();
+
+  @override
+  int get hashCode => Object.hash(value, toString());
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is StringBody && runtimeType == other.runtimeType && _equality.equals(value, other.value);
 }

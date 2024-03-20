@@ -1,3 +1,6 @@
+part of 'jwt.dart';
+
+/// {@nodoc}
 final class JwtPayload {
   const JwtPayload(this.issueAt, this.expirationTime);
 

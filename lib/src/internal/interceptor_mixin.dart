@@ -4,102 +4,20 @@ part of '../../rest_client.dart';
 ///
 ///JWT token handler implementation
 base mixin _InterceptorAPI on _ClientBuilderAPI {
-  final lock = Lock();
-  Completer? _mutex;
+  late final queue = EventQueue(configuration.interceptors, debugLabel: 'REST RequestQueue');
+  final jsonParser = JsonParser();
 
-  final Client refreshClient = Client();
-
-  /// JWT refresh request
-  Future<void> _refresh() async {
-    if (session != null) {
-      _mutex ??= Completer();
-      try {
-        final token = await _getToken;
-        if (token != null) {
-          if (token.isExpired) {
-            final headers = await _headers;
-            configuration.log(FineLogMessage(
-                '''Token is invalid update...\nExpirationDate ${token.expirationDate}\nRemainingTime ${token.remainingTime}'''));
-            final requestResult = await refreshClient.post(buildUri(path: session!.refreshTokenPath), headers: headers);
-            final response = await resolveResponse(requestResult);
-
-            await session!.setToken(response.data['access_token'] as String);
-            configuration.log(FineLogMessage(
-                '''Token update susses!\nExpirationDate ${token.expirationDate}\nRemainingTime ${token.remainingTime}'''));
-          }
-        }
-      } on NetworkException {
-        rethrow;
-      } finally {
-        _mutex?.complete();
-        _mutex = null;
-      }
-    }
-  }
-
-  Future<Response> _send(BaseRequest request) async {
-    final streamResponse = await _client.send(request);
-    return Response.fromStream(streamResponse);
-  }
-
-  /// Send request
+  /// Send request and returned [StreamedResponse]
   ///
-  /// Rethrow exception from [resolveResponse]
-  /// if http client throw exception on wrapped [ConnectionException]
-  Future<RCResponse> _sendRequest(BaseRequest request, {RequestBody? body, Map<String, String>? headers}) async {
-    //Mutex
-    if (lock.locked && _mutex != null) {
-      await _mutex!.future;
-    }
-
-    try {
-      //JWT Refresh
-      await lock.synchronized(_refresh);
-
-      //Headers
-      final commonHeaders = await _headers;
-      if (headers != null) {
-        commonHeaders.addAll(headers);
-      }
-      request.headers.addAll(commonHeaders);
-
-      //Body
-      if (request is Request) {
-        if (body != null) {
-          switch (body) {
-            case BytesBody(value: Uint8List val):
-              request.bodyBytes = val;
-            case JsonMapBody(value: Map<String, Object?> val):
-              request.body = await JsonParser().encode(val, debugPrint: 'Json encode');
-            case StringBody(value: String val):
-              request.body = val;
-          }
-        }
-      }
-
-      //Request send block
-      configuration.log(FineLogMessage('Send request... [${request.method}] ${request.url}'));
-      final stopwatch = Stopwatch()..start();
-      final Response response = await _send(request).whenComplete(stopwatch.stop);
-      configuration.log(FineLogMessage(
-          'Request [${request.method}] ${request.url}: execute time ${stopwatch.elapsedMilliseconds}ms'));
-
-      //Resolve response
-      return resolveResponse(response);
-    } on NetworkException {
-      rethrow;
-    } on FormatException catch (error, stackTrace) {
-      // JsonParser() exception handle when body encode inside sendRequest()
-      // Body parse handle exception
-      configuration.log(ErrorLogMessage(error, stackTrace));
-      Error.throwWithStackTrace(
-        const RestClientException(message: 'Error occurred during decoding body'),
-        stackTrace,
-      );
-    } on ClientException catch (error, stackTrace) {
-      configuration.log(ErrorLogMessage(error, stackTrace));
-      Error.throwWithStackTrace(ConnectionException(message: error.message, uri: error.uri), stackTrace);
-    }
+  /// Wrapper token refreshing and
+  ///
+  /// Is low level method.
+  /// [method] GET,POST,PATCH, PUT, DELETE.
+  @override
+  Future<StreamedResponse> send(BaseRequest request, {final RequestBody? body, final Map<String, String>? headers}) {
+    //Write configuration header inside request
+    request.headers.addAll({...?headers, ...configuration.headers});
+    return queue.add(HttpRequestTask(this, request, body));
   }
 
   /// Decodes [body] from JSON \ UTF8
@@ -109,17 +27,22 @@ base mixin _InterceptorAPI on _ClientBuilderAPI {
   FutureOr<RCResponse> resolveResponse(Response response) async {
     final strategy = ResponseDecodeStrategy.fromHeaders(response.headers);
 
-    //Log response
-    if (response case Response(request: BaseRequest request, statusCode: int status)) {
-      configuration.log(ResponseLogMessage(request.method, request.url, status));
+    try {
+      final result = await strategy.decode(response);
+      return result;
+    } on NetworkException {
+      rethrow;
+    } on FormatException catch (error, stackTrace) {
+      Error.throwWithStackTrace(
+        const RestClientException(message: 'Error occurred during decoding body'),
+        stackTrace,
+      );
     }
-
-    return await strategy.decode(response);
   }
 
   @override
   void dispose() {
-    refreshClient.close();
+    queue.close();
     super.dispose();
   }
 }

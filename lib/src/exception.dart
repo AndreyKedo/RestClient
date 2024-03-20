@@ -1,17 +1,24 @@
+/*
+* exception.dart
+* Default client exceptions.
+* Dashkevich Andrey <dashkevich@ittest-team.ru>, 20 March 2024
+*/
+
 import 'response.dart';
 
-/// {@template network_exception}
+/// {@template rest_client.exception.network_exception}
 /// Base class for all network exceptions
 /// {@endtemplate}
 sealed class NetworkException implements Exception {
+  /// {@macro rest_client.exception.network_exception}
   const NetworkException();
 }
 
-/// {@template rest_client_exception}
+/// {@template rest_client.exception.rest_client_exception}
 /// If something went wrong on the client side
 /// {@endtemplate}
 base class RestClientException implements NetworkException {
-  /// {@macro rest_client_exception}
+  /// {@macro rest_client.exception.rest_client_exception}
   const RestClientException({this.message});
 
   /// Possible reason for the exception
@@ -23,7 +30,7 @@ base class RestClientException implements NetworkException {
       ')';
 }
 
-/// {@template wrong_response_type_exception}
+/// {@template rest_client.exception.wrong_response_type_exception}
 /// If the response type is not supported
 /// {@endtemplate}
 final class ApiErrorException extends RestClientException {
@@ -31,7 +38,7 @@ final class ApiErrorException extends RestClientException {
   final String code;
   final RCResponse response;
 
-  /// {@macro wrong_response_type_exception}
+  /// {@macro rest_client.exception.wrong_response_type_exception}
   const ApiErrorException(this.response, this.statusCode, this.code, {super.message});
 
   @override
@@ -42,13 +49,13 @@ final class ApiErrorException extends RestClientException {
       ')';
 }
 
-/// {@template connection_exception}
+/// {@template rest_client.exception.connection_exception}
 /// If there is no internet connection
 /// {@endtemplate}
 final class ConnectionException extends RestClientException {
   final Uri? uri;
 
-  /// {@macro connection_exception}
+  /// {@macro rest_client.exception.connection_exception}
   const ConnectionException({super.message, this.uri});
 
   @override
@@ -58,11 +65,11 @@ final class ConnectionException extends RestClientException {
       ')';
 }
 
-/// {@template internal_server_exception}
+/// {@template rest_client.exception.internal_server_exception}
 /// If something went wrong on the server side
 /// {@endtemplate}
 base class InternalServerException implements NetworkException {
-  /// {@macro internal_server_exception}
+  /// {@macro rest_client.exception.internal_server_exception}
   const InternalServerException({
     this.message,
     this.statusCode,
@@ -81,11 +88,11 @@ base class InternalServerException implements NetworkException {
       ')';
 }
 
-/// {@template unauthorized_exception}
+/// {@template rest_client.exception.unauthorized}
 /// If the user is not authorized to make the request [401]
 /// {@endtemplate}
 final class UnauthorizedException extends RestClientException {
-  /// {@macro unauthorized_exception}
+  /// {@macro rest_client.exception.unauthorized}
   const UnauthorizedException({
     super.message,
   });

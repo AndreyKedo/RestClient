@@ -1,9 +1,13 @@
+part of 'jwt.dart';
+
 // {
 //   "typ": "JWT",
 //   "alg": "HS256"
 // }
 
+/// {@nodoc}
 final class JwtHeader {
+
   const JwtHeader(this.type, this.algorithm);
 
   final String type;

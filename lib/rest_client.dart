@@ -1,59 +1,57 @@
-// ignore_for_file: depend_on_referenced_packages
-
-library rest_client;
+/*
+* rest_client.dart
+* RestClient.
+* Dashkevich Andrey, 13 March 2024
+*/
 
 import 'dart:async';
-import 'dart:convert';
+import 'dart:collection';
+import 'dart:developer' as developer;
+import 'dart:developer';
 import 'dart:typed_data';
 
+import 'package:collection/collection.dart';
 import 'package:http/http.dart';
-import 'package:http_parser/http_parser.dart';
-import 'package:synchronized/synchronized.dart';
 
-import 'src/utils/utils.dart' show OutputBuffer, JsonParser;
 import 'src/body.dart';
 import 'src/exception.dart';
-import 'src/response_decoder/response_decode.dart';
-import 'src/jwt_utils/jwt.dart';
+import 'src/http_methods.dart';
+import 'src/internal/content_decoder/response_decode_strategy.dart';
 import 'src/response.dart';
-import 'src/rest_config.dart';
+import 'src/utils/utils.dart';
 
-//JWT Utils
-export 'src/jwt_utils/jwt.dart';
+export 'package:http/http.dart'
+    show BaseClient, BaseRequest, MultipartRequest, Request, StreamedRequest, StreamedResponse;
 
-//Response decoder
-export 'src/response_decoder/response_decode.dart';
-export 'src/rest_config.dart';
-
-export 'src/body.dart';
 export 'src/exception.dart';
-export 'src/response.dart';
+export 'src/http_methods.dart';
+export 'src/jwt_utils/jwt.dart';
+export 'src/utils/utils.dart';
 
+part 'src/config.dart';
+part 'src/internal/event_queue.dart';
+part 'src/internal/http_request_task.dart';
+part 'src/internal/interceptor.dart';
 part 'src/internal/interceptor_mixin.dart';
 part 'src/internal/request_methods_mixin.dart';
 part 'src/internal/rest_client_impl.dart';
-
 part 'src/internal/rest_methods_interface.dart';
 
-part 'src/session/jwt_store.dart';
-part 'src/session/session.dart';
-
-///REST client
+/// {@template rest_client}
+/// REST client
 ///
-///Simple REST client for easy use inside app project
-///
-///Internal used HTTP dart library
+/// Simple REST client for easy use inside app project
+/// Internal used HTTP dart library
+/// {@endtemplate}
 abstract base class RestClient implements _IRestMethods {
+  RestClient(this.configuration);
+
+  /// Create instance.
+  factory RestClient.create(RestConfig configuration) => _HttpClient(configuration);
+
+  /// Client configuration.
   final RestConfig configuration;
-  final Session? session;
-  late final Client _client = _getClient();
 
-  RestClient(this.configuration, {this.session});
-
-  factory RestClient.create(RestConfig configuration, {Session? session}) =>
-      _HttpClient(configuration, session: session);
-
-  Client _getClient() => Client();
-
+  /// Release resource and close client.
   void dispose();
 }

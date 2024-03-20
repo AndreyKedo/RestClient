@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+/// {@nodoc}
 class OutputBuffer extends ByteConversionSink {
   List<List<int>>? _chunks = <List<int>>[];
   int _contentLength = 0;
@@ -20,8 +21,8 @@ class OutputBuffer extends ByteConversionSink {
         return;
       }
       _bytes = Uint8List(_contentLength);
-      int offset = 0;
-      for (final List<int> chunk in _chunks!) {
+      var offset = 0;
+      for (final chunk in _chunks!) {
         _bytes!.setRange(offset, offset + chunk.length, chunk);
         offset += chunk.length;
       }

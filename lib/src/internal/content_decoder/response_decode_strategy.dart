@@ -1,16 +1,12 @@
-library response_decoder;
-
 import 'dart:async';
 
 import 'package:http/http.dart' show Response;
 import 'package:http_parser/http_parser.dart';
-import 'package:rest_client/src/exception.dart';
 import 'package:rest_client/src/response.dart';
-import 'package:rest_client/src/utils/utils.dart';
 
-part 'json_decoder.dart';
-part 'html_decoder.dart';
-part 'fallback_decoder.dart';
+import 'json_decoder.dart';
+import 'html_decoder.dart';
+import 'fallback_decoder.dart';
 
 typedef ResponseResolver = FutureOr<RCResponse> Function();
 
@@ -39,16 +35,5 @@ abstract base class ResponseDecodeStrategy implements IResponseDecode {
     return const ResponseDecodeStrategy.fallback();
   }
 
-  FutureOr<RCResponse> decode(Response response) async {
-    try {
-      return await decoder(response);
-    } on NetworkException {
-      rethrow;
-    } on FormatException catch (error, stackTrace) {
-      Error.throwWithStackTrace(
-        RestClientException(message: 'Error occurred during decoding, ${error.message}'),
-        stackTrace,
-      );
-    }
-  }
+  FutureOr<RCResponse> decode(Response response) => decoder(response);
 }

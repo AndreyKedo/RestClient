@@ -1,3 +1,9 @@
+/*
+* response.dart
+* Client response.
+* Dashkevich Andrey, 13 March 2024
+*/
+
 import 'dart:typed_data';
 
 import 'package:http/http.dart' show BaseResponse, Response;

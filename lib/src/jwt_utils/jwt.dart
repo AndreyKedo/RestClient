@@ -1,19 +1,28 @@
-library jwt_utils;
+import 'dart:convert';
 
-import 'header.dart';
-import 'jwt_decoder.dart';
-import 'payload.dart';
+import '../utils/utils.dart';
 
+part 'header.dart';
+part 'jwt_decoder.dart';
+part 'payload.dart';
+
+/// {@template jwt}
+/// JWT object.
+/// {@endtemplate}
 final class JWT {
   final JwtHeader header;
   final JwtPayload playload;
 
   ///Source jwt string
   final String source;
+
+  /// {@macro jwt}
   const JWT(this.header, this.playload, this.source);
 
+  /// {@macro jwt_decoder.decode}
   static JWT decode(String token) => JwtDecoder.decode(token);
 
+  /// {@macro jwt_decoder.try_decode}
   static JWT? tryDecode(String token) => JwtDecoder.tryDecode(token);
 
   ///true - invalid

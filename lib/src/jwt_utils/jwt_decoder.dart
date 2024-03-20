@@ -1,19 +1,25 @@
-import 'dart:convert';
+part of 'jwt.dart';
 
-import 'package:rest_client/src/utils/utils.dart';
-
-import 'header.dart';
-import 'jwt.dart';
-import 'payload.dart';
-
+/// {@template jwt_decoder}
+/// JWT Decoder.
+/// {@endtemplate}
 base class JwtDecoder {
+  /// {@macro jwt_decoder}
   const JwtDecoder();
 
+  static const decoder = JwtDecoder();
+
+  /// {@template jwt_decoder.decode}
+  /// JWT decode from string.
+  /// {@endtemplate}
   static JWT decode(String token) {
-    const decoder = JwtDecoder();
     return JWT(decoder._decodeHeader(token), decoder._decodePayload(token), token);
   }
 
+  /// {@template jwt_decoder.try_decode}
+  /// Try decode JWT from string.
+  /// If decode failed to returned null.
+  /// {@endtemplate}
   static JWT? tryDecode(String token) {
     try {
       return decode(token);
@@ -23,7 +29,7 @@ base class JwtDecoder {
   }
 
   JwtPayload _decodePayload(String token) {
-    final splitToken = token.split(".");
+    final splitToken = token.split('.');
     if (splitToken.length != 3) {
       throw const FormatException('Invalid token', 'JwtDecoder');
     }
@@ -37,7 +43,7 @@ base class JwtDecoder {
   }
 
   JwtHeader _decodeHeader(String token) {
-    final splitToken = token.split(".");
+    final splitToken = token.split('.');
     if (splitToken.length != 3) {
       throw const FormatException('Invalid token');
     }
@@ -54,7 +60,6 @@ base class JwtDecoder {
 
     final str = utf8.decode(base64.decode(normalized));
 
-    final decodedSegment = JsonParser().decodeString(str);
-    return decodedSegment;
+    return JsonParser.jsonCodec.decode(str) as Map<String, Object?>;
   }
 }
