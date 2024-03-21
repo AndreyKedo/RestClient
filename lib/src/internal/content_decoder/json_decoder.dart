@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:http/http.dart' show Response;
 import 'package:rest_client/src/exception.dart';
 import 'package:rest_client/src/response.dart';
-import 'package:rest_client/src/utils/utils.dart';
+import 'package:rest_client/utils.dart';
 
 import 'response_decode_strategy.dart';
 

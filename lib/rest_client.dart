@@ -4,6 +4,25 @@
 * Dashkevich Andrey, 13 March 2024
 */
 
+/// Rest client.
+///
+/// A simple lightweight wrapper around [http](https://pub.dev/packages/http).
+///
+///
+/// ```dart
+/// import 'dart:developer';
+/// import 'package:rest_client/rest_client.dart';
+///
+/// final client = RestClient.client(RestConfig()); // Create client instance
+/// final response = await client.get(Uri.https('example.example', 'api/echo')); // Create request and send, await [RCResponse]
+/// log(response.toString()); // Print response
+/// client.dispose(): // Dispose, closing connection.
+/// ```
+///
+/// Package has simple utils library.
+/// See [utils]({@macro utils}).
+library rest_client;
+
 import 'dart:async';
 import 'dart:collection';
 import 'dart:developer' as developer;
@@ -18,15 +37,14 @@ import 'src/exception.dart';
 import 'src/http_methods.dart';
 import 'src/internal/content_decoder/response_decode_strategy.dart';
 import 'src/response.dart';
-import 'src/utils/utils.dart';
+import 'utils.dart';
 
 export 'package:http/http.dart'
     show BaseClient, BaseRequest, MultipartRequest, Request, StreamedRequest, StreamedResponse;
 
 export 'src/exception.dart';
 export 'src/http_methods.dart';
-export 'src/jwt_utils/jwt.dart';
-export 'src/utils/utils.dart';
+export 'src/response.dart';
 
 part 'src/config.dart';
 part 'src/internal/event_queue.dart';
