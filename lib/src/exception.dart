@@ -4,8 +4,6 @@
 * Dashkevich Andrey <dashkevich@ittest-team.ru>, 20 March 2024
 */
 
-import 'response.dart';
-
 /// {@template rest_client.exception.network_exception}
 /// Base class for all network exceptions.
 /// {@endtemplate}
@@ -27,25 +25,6 @@ base class RestClientException implements NetworkException {
   @override
   String toString() => 'RestClientException('
       'message: $message'
-      ')';
-}
-
-/// {@template rest_client.exception.wrong_response_type_exception}
-/// If the response type is not supported.
-/// {@endtemplate}
-final class ApiErrorException extends RestClientException {
-  final int statusCode;
-  final String code;
-  final RCResponse response;
-
-  /// {@macro rest_client.exception.wrong_response_type_exception}
-  const ApiErrorException(this.response, this.statusCode, this.code, {super.message});
-
-  @override
-  String toString() => 'ApiErrorException('
-      'code: $code,'
-      'message: $message,'
-      'statusCode: $statusCode'
       ')';
 }
 

@@ -4,7 +4,7 @@
 * Dashkevich Andrey, 13 March 2024
 */
 
-part of '../rest_client.dart';
+part of 'rest_client_impl.dart';
 
 /// {@template rest_client.client_factory}
 /// Body of the template
@@ -14,19 +14,20 @@ typedef ClientFactory = Client Function();
 /// {@template rest_client.config}
 /// Client configuration.
 /// {@endtemplate}
-final class RestConfig {
+class ClientConfig {
   /// {@macro rest_client.config}
-  const RestConfig({this.interceptors = const [], this.client = defaultClientFactory, this.headers = defaultHeaders});
+  const ClientConfig(
+      {this.interceptors = const [], this.clientFactory = defaultClientFactory, this.headers = defaultHeaders});
 
   /// Default headers.
   /// Will be used every time when request invoked.
   final Map<String, String> headers;
 
   /// Interceptors.
-  final List<IInterceptor> interceptors;
+  final List<SendInterceptor> interceptors;
 
-  /// Custom client factory.
-  final ClientFactory client;
+  /// Client factory.
+  final ClientFactory clientFactory;
 
   /// Default client factory based [Client]
   static Client defaultClientFactory() => Client();

@@ -1,6 +1,6 @@
 name: rest_client
 description: A simple lightweight REST client.
-version: 0.0.3
+version: 1.0.0
 
 publish_to: 'none'
 
@@ -10,8 +10,6 @@ environment:
 dependencies:
   collection: ^1.18.0
   http: ^1.2.1
-  http_parser: ^4.0.2
-  synchronized: ^3.1.0
 
 dev_dependencies:
   lints: ^3.0.0

@@ -11,13 +11,13 @@ part 'payload.dart';
 /// {@endtemplate}
 final class JWT {
   final JwtHeader header;
-  final JwtPayload playload;
+  final JwtPayload payload;
 
   ///Source jwt string
   final String source;
 
   /// {@macro jwt}
-  const JWT(this.header, this.playload, this.source);
+  const JWT(this.header, this.payload, this.source);
 
   /// {@macro jwt_decoder.decode}
   static JWT decode(String token) => JwtDecoder.decode(token);
@@ -33,12 +33,12 @@ final class JWT {
 
   DateTime get expirationDate {
     final expirationDate =
-        DateTime.fromMillisecondsSinceEpoch(0).add(Duration(seconds: playload.expirationTime.toInt()));
+        DateTime.fromMillisecondsSinceEpoch(0).add(Duration(seconds: payload.expirationTime.toInt()));
     return expirationDate;
   }
 
   Duration get tokenTime {
-    final issuedAtDate = DateTime.fromMillisecondsSinceEpoch(0).add(Duration(seconds: playload.issueAt.toInt()));
+    final issuedAtDate = DateTime.fromMillisecondsSinceEpoch(0).add(Duration(seconds: payload.issueAt.toInt()));
     return DateTime.now().difference(issuedAtDate);
   }
 
@@ -47,10 +47,10 @@ final class JWT {
   }
 
   @override
-  int get hashCode => Object.hash(header, playload);
+  int get hashCode => Object.hash(header, payload);
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is JWT && runtimeType == other.runtimeType && header == other.header && playload == other.playload;
+      other is JWT && runtimeType == other.runtimeType && header == other.header && payload == other.payload;
 }

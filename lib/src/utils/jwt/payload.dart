@@ -2,16 +2,21 @@ part of 'jwt.dart';
 
 /// {@nodoc}
 final class JwtPayload {
-  const JwtPayload(this.issueAt, this.expirationTime);
+  const JwtPayload(this.issueAt, this.expirationTime, this.data);
 
   final num issueAt;
   final num expirationTime;
+  final Map<String, Object?> data;
 
-  factory JwtPayload.fromJson(Map<String, Object?> json) {
-    if (json case {'iat': final num iat, 'exp': final num exp}) {
-      return JwtPayload(iat, exp);
+  factory JwtPayload.fromJson(final Map<String, Object?> json) {
+    try {
+      final {'iat': iat as int, 'exp': exp as int} = json;
+      final copyJson = Map.of(json)..remove('iat')..remove('exp');
+      return JwtPayload(iat, exp, copyJson);
+    } catch (e, stackTrace) {
+      return Error.throwWithStackTrace(const FormatException(' Error occurred during decoding JWTHeader', 'JwtDecoder'), stackTrace);
     }
-    throw const FormatException(' Error occurred during decoding JWTHeader', 'JwtDecoder');
+   
   }
 
   @override
@@ -23,5 +28,6 @@ final class JwtPayload {
       other is JwtPayload &&
           runtimeType == other.runtimeType &&
           issueAt == other.issueAt &&
-          expirationTime == other.expirationTime;
+          expirationTime == other.expirationTime &&
+          data == other.data;
 }

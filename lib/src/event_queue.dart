@@ -1,9 +1,9 @@
-part of '../../rest_client.dart';
+part of 'rest_client_impl.dart';
 
 /// Task handler.
 ///
 /// Simple task handler.
-abstract interface class ITaskHandler {
+abstract interface class QueueTaskHandler {
   /// Check task execution state.
   bool get isCompleted;
 
@@ -13,21 +13,20 @@ abstract interface class ITaskHandler {
   void reject(Object error, [StackTrace? stackTrace]);
 }
 
-/// {@template event_queue}
+/// {@template sequential_task_queue}
 /// An event queue is a queue of [EventCallback]s that are executed in order.
 /// {@endtemplate}
 /// {@nodoc}
-class EventQueue implements Sink<EventQueueTask> {
-  /// {@macro event_queue}
-  EventQueue(this.interceptors, {String debugLabel = 'EventQueue'}) : _debugLabel = debugLabel;
+class SequentialTaskQueue implements Sink<EventQueueTask> {
+  /// {@macro sequential_task_queue}
+  SequentialTaskQueue(this.interceptors, {String debugLabel = 'SequentialTaskQueue'}) : _debugLabel = debugLabel;
 
   final Queue<EventQueueTask> _queue = Queue<EventQueueTask>();
   final String _debugLabel;
 
-  final List<IInterceptor> interceptors;
+  final List<SendInterceptor> interceptors;
 
   Future<void>? _processing;
-  bool get isClosed => _closed;
   bool _closed = false;
 
   @override
@@ -108,7 +107,7 @@ class EventQueue implements Sink<EventQueueTask> {
 
 /// Queue task.
 /// {@nodoc}
-abstract base class EventQueueTask implements ITaskHandler {
+abstract base class EventQueueTask implements QueueTaskHandler {
   EventQueueTask(this.request) : _completer = Completer<StreamedResponse>();
 
   final BaseRequest request;
@@ -145,7 +144,7 @@ abstract base class EventQueueTask implements ITaskHandler {
 
   @override
   bool operator ==(Object other) {
-    if (identical(this, other) || (other is EventQueue && runtimeType == other.runtimeType)) {
+    if (identical(this, other) || (other is SequentialTaskQueue && runtimeType == other.runtimeType)) {
       if (other
           case BaseRequest(
             method: final method,
