@@ -14,3 +14,11 @@
 * Remove queryParams method signature. Use Uri API.
 * Used [lints](https://pub.dev/packages/lints) package.
 * [WIP] Doc
+
+
+# 1.0.0
+
+* Change structure.
+* Remove custom response wrapper.
+* Remove response decoder.
+* Rename IInterceptor to SendInterceptor.

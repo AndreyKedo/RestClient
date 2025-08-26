@@ -1,4 +1,4 @@
-name: rest_client
+name: http_client
 description: A simple lightweight REST client.
 version: 1.0.0
 
@@ -10,7 +10,8 @@ environment:
 dependencies:
   collection: ^1.18.0
   http: ^1.2.1
+  meta: any
 
 dev_dependencies:
-  lints: ^3.0.0
+  lints: any
   test: ^1.25.2

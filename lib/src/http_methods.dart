@@ -1,7 +1,7 @@
 /*
 * http_methods.dart
 * Available HTTP methods.
-* Dashkevich Andrey <dashkevich@ittest-team.ru>, 20 March 2024
+* Dashkevich Andrey, 20 March 2024
 */
 
 /// {@template rest_client.http_methods}
@@ -32,4 +32,22 @@ extension type const HttpMethod._(String value) implements String {
 
   /// Info of [HEAD](https://developer.mozilla.org/en/docs/Web/HTTP/Methods/HEAD)
   static const head = HttpMethod._('HEAD');
+
+  static void checkMethod(String value) {
+    if (_availableMethods.contains(value)) return;
+    throw ArgumentError.value(
+      value,
+      'method',
+      'Not a valid method',
+    );
+  }
+
+  static const _availableMethods = {
+    get,
+    post,
+    put,
+    patch,
+    delete,
+    head,
+  };
 }

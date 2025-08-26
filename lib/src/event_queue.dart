@@ -1,163 +1,166 @@
-part of 'rest_client_impl.dart';
+import 'dart:async';
+import 'dart:collection';
 
-/// Task handler.
-///
-/// Simple task handler.
-abstract interface class QueueTaskHandler {
-  /// Check task execution state.
-  bool get isCompleted;
+import 'package:collection/collection.dart';
+import 'package:meta/meta.dart';
 
-  /// Reject task.
-  ///
-  /// Ended future with [error] and [stackTrace].
-  void reject(Object error, [StackTrace? stackTrace]);
-}
+typedef RunnableCallback<T> = Future<T> Function();
 
-/// {@template sequential_task_queue}
-/// An event queue is a queue of [EventCallback]s that are executed in order.
-/// {@endtemplate}
-/// {@nodoc}
-class SequentialTaskQueue implements Sink<EventQueueTask> {
-  /// {@macro sequential_task_queue}
-  SequentialTaskQueue(this.interceptors, {String debugLabel = 'SequentialTaskQueue'}) : _debugLabel = debugLabel;
+abstract class WorkQueueBase {
+  final _QueueProxy<_TaskBase<Object?>> _queue;
 
-  final Queue<EventQueueTask> _queue = Queue<EventQueueTask>();
-  final String _debugLabel;
+  Future<void>? _current;
 
-  final List<SendInterceptor> interceptors;
+  WorkQueueBase(this._queue);
 
-  Future<void>? _processing;
-  bool _closed = false;
+  Future<R> schedule<R>(
+    RunnableCallback<R> callback,
+  );
 
-  @override
-  Future<StreamedResponse> add(final EventQueueTask event) {
-    if (_closed) {
-      throw StateError('EventQueue is closed');
-    }
-    for (var element in _queue) {
-      if (element == event) {
-        return element.future;
-      }
-    }
-    _queue.add(event);
-    unawaited(_openExecuteWindow());
-    developer.Timeline.instantSync('$_debugLabel:add');
-    return event.future;
-  }
+  @visibleForTesting
+  Future<void>? get active => _current;
 
-  @override
-  Future<void> close({bool force = false}) async {
-    _closed = true;
-    if (force) {
-      for (final task in _queue) {
-        task.reject(
-          StateError('StateQueue is closed'),
-          StackTrace.current,
-        );
-      }
-      _queue.clear();
-    } else {
-      await _processing;
-    }
-  }
+  Future<void> _schedule() {
+    final processing = _current;
+    if (processing != null) return processing;
 
-  Future<void> _openExecuteWindow() {
-    final processing = _processing;
-    if (processing != null) {
-      return processing;
-    }
-    final flow = developer.Flow.begin();
-    developer.Timeline.instantSync('$_debugLabel:begin execute');
-    final stopwatch = Stopwatch();
-    return _processing = Future.doWhile(() async {
+    return _current ??= Future.doWhile(() async {
       if (_queue.isEmpty) {
-        _processing = null;
-        developer.Timeline.instantSync('$_debugLabel:end execute');
-        developer.Flow.end(flow.id);
-        stopwatch.stop();
+        _current = null;
         return false;
       }
 
-      if (stopwatch.elapsedMilliseconds >= 13.0) {
-        // ignore: inference_failure_on_instance_creation
-        await Future.delayed(Duration.zero);
-        stopwatch.reset();
-      }
+      await _queue.removeFirst().execute();
 
-      final event = _queue.removeFirst();
-
-      try {
-        for (var interceptor in interceptors) {
-          await interceptor.onRequest(event.request, event);
-        }
-      } catch (error, stackTrace) {
-        event.reject(error, stackTrace);
-        return true;
-      }
-
-      unawaited(developer.Timeline.timeSync(
-        '$_debugLabel:request execute',
-        event.call, //call and measure time
-        flow: developer.Flow.step(flow.id),
-      ));
       return true;
     });
   }
+
+  @visibleForTesting
+  Future<void> clear() async {
+    _queue.clear(); // remove all future task
+    await _current; // await last
+  }
 }
 
-/// Queue task.
-/// {@nodoc}
-abstract base class EventQueueTask implements QueueTaskHandler {
-  EventQueueTask(this.request) : _completer = Completer<StreamedResponse>();
+abstract class _TaskBase<T> {
+  final RunnableCallback<T> function;
 
-  final BaseRequest request;
-  final Completer<StreamedResponse> _completer;
+  final _completer = Completer<T>();
 
-  @override
-  bool get isCompleted => _completer.isCompleted;
+  _TaskBase({
+    required this.function,
+  });
 
-  Future<StreamedResponse> get future => _completer.future;
+  Future<T> get future => _completer.future;
 
-  /// Task computation.
-  Future<StreamedResponse> execute(BaseRequest request);
-
-  Future<void> call() =>
-      runZonedGuarded<Future<void>>(() async {
-        if (_completer.isCompleted) return;
-        final result = await execute(request);
-        if (_completer.isCompleted) return;
-        _completer.complete(result);
-      }, reject) ??
-      Future.value();
-
-  @override
-  void reject(Object error, [StackTrace? stackTrace]) {
+  Future<void> execute() async {
     if (_completer.isCompleted) return;
-
-    _completer.completeError(error, stackTrace);
-  }
-
-  static const _equality = DeepCollectionEquality();
-
-  @override
-  int get hashCode => request.hashCode;
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other) || (other is SequentialTaskQueue && runtimeType == other.runtimeType)) {
-      if (other
-          case BaseRequest(
-            method: final method,
-            headers: final headers,
-            contentLength: final contentLength,
-            url: final url
-          )) {
-        return request.method == method &&
-            _equality.equals(request.headers, headers) &&
-            request.contentLength == contentLength &&
-            request.url == url;
-      }
+    try {
+      final result = await function();
+      if (_completer.isCompleted) return;
+      _completer.complete(result);
+    } catch (exception, stackTrace) {
+      _completer.completeError(
+        exception,
+        stackTrace,
+      );
     }
-    return false;
   }
+}
+
+final class PriorityWorkQueue extends WorkQueueBase {
+  static final main = PriorityWorkQueue();
+
+  PriorityWorkQueue() : super(_PriorityQueueProxy());
+
+  @override
+  Future<R> schedule<R>(
+    RunnableCallback<R> callback, {
+    WorkPriority priority = WorkPriority.low,
+  }) {
+    final task = _PriorityTask<R>(
+      priority: priority,
+      function: callback,
+    );
+    _queue.add(task);
+    _schedule().ignore();
+    return task.future;
+  }
+}
+
+class _PriorityTask<T> extends _TaskBase<T> implements Comparable<_PriorityTask> {
+  final WorkPriority priority;
+
+  _PriorityTask({
+    required this.priority,
+    required super.function,
+  });
+
+  @override
+  int compareTo(_PriorityTask other) => priority.compareTo(other.priority);
+}
+
+enum WorkPriority implements Comparable<WorkPriority> {
+  hight(3),
+  middle(2),
+  low(1);
+
+  const WorkPriority(this.value);
+
+  final int value;
+
+  @override
+  int compareTo(WorkPriority other) => index.compareTo(other.index);
+}
+
+class WorkQueue extends WorkQueueBase {
+  static final main = WorkQueue();
+
+  WorkQueue() : super(_SequentialWorkQueue());
+
+  @override
+  Future<void>? get active => _current;
+
+  @override
+  Future<T> schedule<T>(RunnableCallback<T> callback) {
+    final task = WorkQueueTask(function: callback);
+    _queue.add(task);
+    _schedule().ignore();
+    return task.future;
+  }
+}
+
+class WorkQueueTask<T> extends _TaskBase<T> {
+  WorkQueueTask({required super.function});
+}
+
+abstract interface class _QueueProxy<T> {
+  bool get isEmpty;
+
+  void add(T task);
+
+  T removeFirst();
+
+  void clear();
+}
+
+class _PriorityQueueProxy<T extends _TaskBase> extends HeapPriorityQueue<T> implements _QueueProxy<T> {
+  _PriorityQueueProxy([super.comparison]);
+}
+
+class _SequentialWorkQueue<T extends _TaskBase> implements _QueueProxy<T> {
+  late final _queue = Queue<T>();
+
+  @override
+  bool get isEmpty => _queue.isEmpty;
+
+  @override
+  void add(T task) => _queue.add(task);
+
+  @override
+  void clear() => _queue.clear();
+
+  @override
+  T removeFirst() => _queue.removeFirst();
 }
