@@ -72,6 +72,7 @@ abstract class WorkQueueBase {
 
   /// Enqueues a task either in the current scope or main queue
   @protected
+  @visibleForTesting
   Future<R> enqueue<R>(TaskBase<R> task) {
     final parentScope = _getParentScope();
     // If we're inside a task scope, add to the nested queue
@@ -89,6 +90,7 @@ abstract class WorkQueueBase {
 
   /// Starts processing tasks if not already processing
   @protected
+  @visibleForTesting
   void scheduleTask() {
     if (_isProcessing) return;
     _root = Zone.current;
@@ -179,6 +181,7 @@ abstract class TaskBase<T> {
     if (_completer.isCompleted) return;
     try {
       final result = await function();
+      await Future.delayed(Duration.zero);
       _completeWithResult(result);
     } catch (exception, stackTrace) {
       _completeWithError(exception, stackTrace);
