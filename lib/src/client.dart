@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:http/http.dart';
-import 'package:http_client/src/event_queue.dart';
-import 'package:http_client/src/http_methods.dart';
+import 'package:http_middleware/src/work_queue.dart';
+import 'package:http_middleware/src/http_methods.dart';
 import 'package:meta/meta.dart';
 
 typedef Handler = Future<StreamedResponse> Function(BaseRequest request, Map<String, Object?> context);
@@ -14,8 +14,8 @@ typedef InlineMiddlewareCallback = Future<StreamedResponse> Function(
 /// HTTP client.
 ///
 /// Simple HTTP client for easy use inside app project
-class HttpClient extends BaseClient {
-  HttpClient({
+class HttpMiddlewareClient extends BaseClient {
+  HttpMiddlewareClient({
     Client? client,
     List<Middleware>? middlewares,
   })  : client = client ?? Client(),

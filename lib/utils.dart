@@ -1,7 +1,5 @@
-/// {@template utils}
 /// Use simple utils from json serialization [JsonParser]
 /// or parse jwt token [JWT],[JwtDecoder].
-/// {@endtemplate}
 library;
 
 export 'src/utils/json_parser/json_parser.dart';

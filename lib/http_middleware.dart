@@ -1,6 +1,5 @@
 /*
-* http_client.dart
-* RestClient.
+* http_middleware.dart
 * Dashkevich Andrey, 13 March 2024
 */
 

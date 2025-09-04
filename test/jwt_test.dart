@@ -1,4 +1,4 @@
-import 'package:http_client/utils.dart';
+import 'package:http_middleware/utils.dart';
 import 'package:test/test.dart';
 
 void main() {

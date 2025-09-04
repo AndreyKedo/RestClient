@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:http_client/src/utils/json_parser/json_parser.dart';
+import 'package:http_middleware/src/utils/json_parser/json_parser.dart';
 
 part 'header.dart';
 part 'jwt_decoder.dart';

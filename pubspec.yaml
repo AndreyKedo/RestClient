@@ -1,8 +1,7 @@
-name: http_client
-description: A simple lightweight REST client.
+name: http_middleware
+description: An Http client that uses middleware to handle requests.
 version: 1.0.0
-
-publish_to: 'none'
+repository: https://github.com/AndreyKedo/http_middleware
 
 environment:
   sdk: '>=3.3.0 <4.0.0'

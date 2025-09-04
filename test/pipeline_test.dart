@@ -1,7 +1,6 @@
 import 'dart:math';
 
-import 'package:http_client/http_client.dart';
-import 'package:http_client/src/event_queue.dart';
+import 'package:http_middleware/http_middleware.dart';
 import 'package:test/test.dart';
 import 'package:test/fake.dart';
 
@@ -31,20 +30,43 @@ void main() {
     });
 
     test('should initialize with default client and empty middlewares', () {
-      final client = HttpClient();
+      final client = HttpMiddlewareClient();
       expect(client.client, isNotNull);
       expect(client.middlewares, isEmpty);
     });
 
+    test('should initialize with default client and middlewares', () async {
+      final middlewares = [
+        Middleware.inline((request, context, handler) {
+          request.headers['test'] = 'testValue';
+
+          return handler(request, context);
+        }),
+        Middleware.inlineQueue((request, context, handler) async {
+          final stopwatch = Stopwatch()..start();
+          request.headers['authentication'] = await Future.delayed(Duration(milliseconds: 400), () => 'token');
+          stopwatch.stop();
+
+          context['auth_delay'] = stopwatch.elapsedMilliseconds;
+
+          return handler(request, context);
+        })
+      ];
+
+      final client = HttpMiddlewareClient(middlewares: middlewares);
+
+      final response = await client.get(Uri(host: 'example.com', path: '/get'));
+    });
+
     test('should initialize with provided client and middlewares', () {
       final middleware = FakeMiddleware();
-      final client = HttpClient(client: fakeClient, middlewares: [middleware]);
+      final client = HttpMiddlewareClient(client: fakeClient, middlewares: [middleware]);
       expect(client.client, equals(fakeClient));
       expect(client.middlewares, equals([middleware]));
     });
 
     test('should send request through client', () async {
-      final client = HttpClient(client: fakeClient);
+      final client = HttpMiddlewareClient(client: fakeClient);
       final request = Request('GET', Uri.parse('https://example.com'));
 
       await client.send(request);
@@ -54,7 +76,7 @@ void main() {
     });
 
     test('should close client and reset pipeline', () {
-      final client = HttpClient();
+      final client = HttpMiddlewareClient();
       // Since close method is void, we just ensure no exception is thrown
       expect(() => client.close(), returnsNormally);
     });
