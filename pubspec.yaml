@@ -1,18 +1,16 @@
-name: rest_client
-description: A simple lightweight REST client.
-version: 0.0.3
-
-publish_to: 'none'
+name: http_middleware
+description: An wrapper around package [http](https://pub.dev/packages/http) HTTP client that supports middleware for processing requests and responses.
+version: 1.0.0
+repository: https://github.com/AndreyKedo/http_middleware
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
 
 dependencies:
   collection: ^1.18.0
-  http: ^1.2.1
-  http_parser: ^4.0.2
-  synchronized: ^3.1.0
+  http: ^1.5.0
+  meta: any
 
 dev_dependencies:
-  lints: ^3.0.0
+  lints: any
   test: ^1.25.2
