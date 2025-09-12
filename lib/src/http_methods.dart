@@ -1,11 +1,8 @@
-/*
-* http_methods.dart
-* Available HTTP methods.
-* Dashkevich Andrey, 20 March 2024
-*/
+import 'package:meta/meta.dart';
 
-/// {@template rest_client.http_methods}
-/// HTTP methods.
+/// HTTP methods shortcuts.
+///
+/// Provides constants for standard HTTP methods.
 ///
 /// * [HttpMethod.get]
 /// * [HttpMethod.post]
@@ -13,26 +10,38 @@
 /// * [HttpMethod.patch]
 /// * [HttpMethod.delete]
 /// * [HttpMethod.head]
-/// {@endtemplate}
 extension type const HttpMethod._(String value) implements String {
-  /// Info of [GET](https://developer.mozilla.org/en/docs/Web/HTTP/Methods/GET)
+  /// GET HTTP method.
+  ///
+  /// See [MDN documentation](https://developer.mozilla.org/en/docs/Web/HTTP/Methods/GET)
   static const get = HttpMethod._('GET');
 
-  /// Info of [POST](https://developer.mozilla.org/en/docs/Web/HTTP/Methods/POST)
+  /// POST HTTP method.
+  ///
+  /// See [MDN documentation](https://developer.mozilla.org/en/docs/Web/HTTP/Methods/POST)
   static const post = HttpMethod._('POST');
 
-  /// Info of [PUT](https://developer.mozilla.org/en/docs/Web/HTTP/Methods/PUT)
+  /// PUT HTTP method.
+  ///
+  /// See [MDN documentation](https://developer.mozilla.org/en/docs/Web/HTTP/Methods/PUT)
   static const put = HttpMethod._('PUT');
 
-  /// Info of [PATCH](https://developer.mozilla.org/en/docs/Web/HTTP/Methods/PATCH)
+  /// PATCH HTTP method.
+  ///
+  /// See [MDN documentation](https://developer.mozilla.org/en/docs/Web/HTTP/Methods/PATCH)
   static const patch = HttpMethod._('PATCH');
 
-  /// Info of [DELETE](https://developer.mozilla.org/en/docs/Web/HTTP/Methods/DELETE)
+  /// DELETE HTTP method.
+  ///
+  /// See [MDN documentation](https://developer.mozilla.org/en/docs/Web/HTTP/Methods/DELETE)
   static const delete = HttpMethod._('DELETE');
 
-  /// Info of [HEAD](https://developer.mozilla.org/en/docs/Web/HTTP/Methods/HEAD)
+  /// HEAD HTTP method.
+  ///
+  /// See [MDN documentation](https://developer.mozilla.org/en/docs/Web/HTTP/Methods/HEAD)
   static const head = HttpMethod._('HEAD');
 
+  @internal
   static void checkMethod(String value) {
     if (_availableMethods.contains(value)) return;
     throw ArgumentError.value(

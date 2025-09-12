@@ -18,7 +18,6 @@
 
 # 1.0.0
 
-* Change structure.
-* Remove custom response wrapper.
-* Remove response decoder.
-* Rename IInterceptor to SendInterceptor.
+* Full refactoring.
+* A middleware approach for processing requests and responses has been implemented.
+* Code cleanup.
