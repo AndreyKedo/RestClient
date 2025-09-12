@@ -14,3 +14,10 @@
 * Remove queryParams method signature. Use Uri API.
 * Used [lints](https://pub.dev/packages/lints) package.
 * [WIP] Doc
+
+
+# 1.0.0
+
+* Full refactoring.
+* A middleware approach for processing requests and responses has been implemented.
+* Code cleanup.
