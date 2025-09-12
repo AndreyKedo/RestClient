@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:http/http.dart';
-import 'package:http_middleware/src/work_queue.dart';
-import 'package:http_middleware/src/http_methods.dart';
+import 'package:http_middleware_client/src/work_queue.dart';
+import 'package:http_middleware_client/src/http_methods.dart';
 import 'package:meta/meta.dart';
 
 /// A function that handles an HTTP request and returns a streamed response.

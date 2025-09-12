@@ -29,7 +29,7 @@ There are two types of middleware:
 Middlewares are executed in the order they are added to the list. Each middleware must call handler(request, context) to pass control to the next handler.
 
 ```dart
-import 'package:http_middleware/http_middleware.dart';
+import 'package:http_middleware_client/http_middleware_client.dart';
 
   final middlewares = [
     Middleware.inline((request, context, handler) async {

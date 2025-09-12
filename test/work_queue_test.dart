@@ -1,4 +1,4 @@
-import 'package:http_middleware/src/work_queue.dart';
+import 'package:http_middleware_client/src/work_queue.dart';
 import 'package:test/test.dart';
 
 const kDefaultDelay = Duration(milliseconds: 100);

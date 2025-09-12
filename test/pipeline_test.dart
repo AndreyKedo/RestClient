@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:http/http.dart';
-import 'package:http_middleware/http_middleware.dart';
+import 'package:http_middleware_client/http_middleware_client.dart';
 import 'package:test/test.dart';
 import 'package:test/fake.dart';
 
