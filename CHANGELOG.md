@@ -21,3 +21,7 @@
 * Full refactoring.
 * A middleware approach for processing requests and responses has been implemented.
 * Code cleanup.
+
+# 1.0.0 + 1
+
+* Added topics to Pubspec.
