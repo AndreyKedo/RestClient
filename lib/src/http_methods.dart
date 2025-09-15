@@ -10,7 +10,7 @@ import 'package:meta/meta.dart';
 /// * [HttpMethod.patch]
 /// * [HttpMethod.delete]
 /// * [HttpMethod.head]
-extension type const HttpMethod._(String value) implements String {
+extension type const HttpMethod._(String _value) implements String {
   /// GET HTTP method.
   ///
   /// See [MDN documentation](https://developer.mozilla.org/en/docs/Web/HTTP/Methods/GET)
