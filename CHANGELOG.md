@@ -25,3 +25,7 @@
 # 1.0.0+1
 
 * Added topics to Pubspec.
+
+# 1.0.0+2
+
+* Fix analyzer issue
