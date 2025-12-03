@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:http_middleware_client/src/work_queue.dart';
 import 'package:test/test.dart';
 
@@ -219,6 +221,7 @@ void main() {
 
           final level3 = await queue.schedule(() async {
             await Future.delayed(kDefaultDelay);
+
             executionLog.add('Level 3');
             return 300;
           });
@@ -236,6 +239,44 @@ void main() {
       // Assert
       expect(result, equals(321));
       expect(executionLog, equals(['Level 1 start', 'Level 2 start', 'Level 3', 'Level 2 end', 'Level 1 end']));
+    });
+
+    test('should handle complex nested scenarios with sequence', () async {
+      // Arrange & Act
+      final result = await queue.schedule(() async {
+        executionLog.add('Level 1 start');
+
+        final level2 = await queue.schedule(() async {
+          executionLog.add('Level 2-1 start');
+
+          final level3 = await queue.schedule(() async {
+            await Future.delayed(kDefaultDelay);
+
+            executionLog.add('Level 3');
+            return 300;
+          });
+
+          executionLog.add('Level 2-1 end');
+          await Future.delayed(kDefaultDelay);
+          return level3 + 20;
+        });
+
+        executionLog.add('Level 1 end');
+        await Future.delayed(kDefaultDelay);
+        return level2 + 1;
+      });
+
+      // Assert
+      expect(result, equals(321));
+      expect(
+          executionLog,
+          equals([
+            'Level 1 start',
+            'Level 2-1 start',
+            'Level 3',
+            'Level 2-1 end',
+            'Level 1 end',
+          ]));
     });
 
     test('should process tasks after nested tasks complete', () async {
@@ -350,6 +391,31 @@ void main() {
         final results = await Future.wait(futures);
         executionLog.add('Parent end');
         return results.reduce((a, b) => a + b);
+      });
+
+      expect(result, equals(3)); // 0 + 1 + 2 = 3
+      expect(executionLog, equals(['Parent start', 'Child 0', 'Child 1', 'Child 2', 'Parent end']));
+    });
+
+    test('should handle tasks that schedule multiple nested tasks without awaiting', () async {
+      var result = 0;
+      final random = Random();
+      await queue.schedule(() async {
+        executionLog.add('Parent start');
+
+        final futures = <Future<int>>[];
+        for (var i = 0; i < 3; i++) {
+          futures.add(queue.schedule(() async {
+            await Future.delayed(Duration(milliseconds: kDefaultDelay.inMilliseconds + random.nextInt(100) + 10));
+            executionLog.add('Child $i');
+            return i;
+          }));
+        }
+
+        await Future.wait(futures).then((value) {
+          result = value.reduce((a, b) => a + b);
+        });
+        executionLog.add('Parent end');
       });
 
       expect(result, equals(3)); // 0 + 1 + 2 = 3

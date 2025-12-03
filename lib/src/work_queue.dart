@@ -11,9 +11,11 @@ typedef RunnableCallback<T> = Future<T> Function();
 
 /// Represents a scope for tasks within a specific zone.
 /// Each task scope maintains its own queue of nested tasks.
+@internal
 class TaskScope {
   TaskScope({
     required this.task,
+    required this.depth,
     required QueueProxy<TaskBase<Object?>> innerQueue,
   }) : _innerQueue = innerQueue;
 
@@ -23,6 +25,12 @@ class TaskScope {
   /// Queue for nested tasks within this scope
   final QueueProxy<TaskBase<Object?>> _innerQueue;
 
+  final int depth;
+
+  bool _isBusy = false;
+
+  bool get hasAwaitedTask => _isBusy;
+
   /// Returns true if the inner queue is empty
   bool get isEmpty => _innerQueue.isEmpty;
 
@@ -31,13 +39,20 @@ class TaskScope {
     _innerQueue.add(task);
   }
 
+  TaskBase<Object?>? get first => _innerQueue.first;
+
   /// Removes and returns the first task from the inner queue
   TaskBase<Object?> removeFirst() => _innerQueue.removeFirst();
+
+  void lock() => _isBusy = true;
+
+  void unLock() => _isBusy = false;
 }
 
 /// Base class for work queues that manage asynchronous task execution
 /// with support for nested task scheduling without deadlocks.
 abstract class WorkQueueBase {
+  /// Create WorkQueueBase
   WorkQueueBase(this.queueFactory) : _queue = queueFactory();
 
   /// Main queue for tasks
@@ -45,9 +60,6 @@ abstract class WorkQueueBase {
 
   /// Factory for creating new task queues
   final CollectionFactoryCallback queueFactory;
-
-  /// Key for storing task scopes in zones
-  final _zoneKey = Object();
 
   /// Flag indicating if the queue is currently processing tasks
   bool _isProcessing = false;
@@ -62,9 +74,9 @@ abstract class WorkQueueBase {
   int get tasksPending => _queue.length;
 
   /// Retrieves the parent task scope from the current or specified zone
-  TaskScope? _getParentScope([Zone? zone]) {
-    final context = zone ?? Zone.current;
-    return context[_zoneKey] as TaskScope?;
+  TaskScope? _getParentScope() {
+    final context = Zone.current;
+    return context[context.parent ?? _root] as TaskScope?;
   }
 
   /// Schedules a new task for execution
@@ -102,18 +114,31 @@ abstract class WorkQueueBase {
   @protected
   void processNextTask() {
     final currentZone = Zone.current;
-    final zoneScope = _getParentScope(currentZone);
+    final zoneScope = _getParentScope();
 
     // If we have a scope with tasks, process them first
     if (zoneScope != null && !zoneScope.isEmpty) {
+      if (zoneScope.hasAwaitedTask) return;
+
       final task = zoneScope.removeFirst();
-      _executeTask(task, currentZone);
+      final scope = TaskScope(task: task, depth: zoneScope.depth + 1, innerQueue: queueFactory());
+      currentZone.fork(zoneValues: {currentZone: scope}).run(() {
+        zoneScope.lock();
+        task.execute().whenComplete(() async {
+          // Critical: Use a zero-duration delay to yield to the event loop
+          // This ensures all nested tasks complete before continuing
+          await Future.delayed(Duration.zero);
+          zoneScope.unLock();
+
+          processNextTask();
+        });
+      });
       return;
     }
 
     // If scope is empty, return to root zone
     if (zoneScope != null) {
-      currentZone.run(processNextTask);
+      currentZone.parent?.run(processNextTask);
       return;
     }
 
@@ -125,33 +150,13 @@ abstract class WorkQueueBase {
 
     // Get task from main queue and create a new scope for it
     final task = _queue.removeFirst();
-    final scope = TaskScope(task: task, innerQueue: queueFactory());
-    final newZone = currentZone.fork(zoneValues: {_zoneKey: scope});
-
-    _executeTask(task, newZone);
-  }
-
-  /// Executes a task in the specified zone
-  ///
-  /// Uses a delayed future to ensure proper event loop scheduling
-  /// which prevents nested tasks from interfering with the execution order
-  void _executeTask(TaskBase<Object?> task, Zone zone) {
-    zone.run(() {
+    final values = {currentZone: TaskScope(task: task, depth: 0, innerQueue: queueFactory())};
+    currentZone.fork(zoneValues: values).run(() {
       task.execute().whenComplete(() async {
-        // Check if there are more tasks in the current scope
-        final scope = _getParentScope(zone);
-        if (scope != null && !scope.isEmpty) {
-          // Process next task in current scope
-          processNextTask();
-          return;
-        }
-
         // Critical: Use a zero-duration delay to yield to the event loop
         // This ensures all nested tasks complete before continuing
         await Future.delayed(Duration.zero);
-
-        // Return to parent zone or root zone for next task
-        (zone.parent ?? _root).run(processNextTask);
+        (Zone.current.parent ?? _root).run(processNextTask);
       });
     });
   }
@@ -165,6 +170,7 @@ abstract class WorkQueueBase {
 
 /// Base class for all tasks that can be executed by a WorkQueue
 abstract class TaskBase<T> {
+  /// Create task base.
   TaskBase({required this.function});
 
   /// The function to execute when this task runs
@@ -220,6 +226,9 @@ class WorkQueueTask<T> extends TaskBase<T> {
 
 /// Interface for task queue implementations
 abstract class QueueProxy<T> {
+  /// Create proxy.
+  const QueueProxy();
+
   /// Number of tasks in the queue
   int get length;
 
@@ -237,6 +246,9 @@ abstract class QueueProxy<T> {
 
   /// Removes all tasks from the queue
   void clear();
+
+  /// The first element of queue.
+  T? get first;
 }
 
 /// Sequential implementation of a task queue
@@ -260,4 +272,7 @@ class _SequentialWorkQueue<T extends TaskBase> extends QueueProxy<T> {
 
   @override
   T removeLast() => _queue.removeLast();
+
+  @override
+  T? get first => _queue.firstOrNull;
 }

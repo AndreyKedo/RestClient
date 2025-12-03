@@ -29,3 +29,7 @@
 # 1.0.0+2
 
 * Fix analyzer issue
+
+# 1.0.1
+
+* Fix [WorkQueueBase](https://pub.dev/documentation/http_middleware_client/latest/http_middleware_client/WorkQueueBase-class.html).

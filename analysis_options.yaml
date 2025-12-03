@@ -9,3 +9,4 @@ formatter:
 analyzer:
   errors:
     doc_directive_unknown: ignore
+    avoid_print: warning

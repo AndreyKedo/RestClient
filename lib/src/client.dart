@@ -83,7 +83,6 @@ class HttpMiddlewareClient extends BaseClient {
 
   SendPipeline _pipeline = SendPipeline.empty;
 
-  /// {@nodoc}
   /// Pipeline of middleware used to process HTTP requests.
   @visibleForTesting
   @internal
@@ -197,8 +196,10 @@ final class _InlineMiddleware implements Middleware {
 
 /// A pipeline of middleware that can process HTTP requests.
 class SendPipeline {
+  /// Create pipeline.
   const SendPipeline([this.depth = 0]);
 
+  @internal
   @visibleForTesting
   final int depth;
 
@@ -210,6 +211,7 @@ class SendPipeline {
   /// Returns a new pipeline with the middleware added.
   SendPipeline addMiddleware(Middleware middleware) => _Pipeline(middleware, addHandler, depth + 1);
 
+  /// Add handler for pipeline.
   @visibleForTesting
   Handler addHandler(Handler handler) => handler;
 }
