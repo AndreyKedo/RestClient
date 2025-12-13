@@ -83,7 +83,9 @@ class HttpMiddlewareClient extends BaseClient {
 
   SendPipeline _pipeline = SendPipeline.empty;
 
+  /// Pipeline of middleware used to process HTTP requests.
   @visibleForTesting
+  @internal
   SendPipeline get pipeline => _pipeline;
 
   @override
@@ -111,6 +113,7 @@ class HttpMiddlewareClient extends BaseClient {
 /// responses after they are received. They form a chain where each middleware
 /// can choose to delegate to the next middleware or handle the request itself.
 abstract class Middleware {
+  /// Create middleware.
   const Middleware();
 
   /// Creates a middleware from an inline callback function.
@@ -128,6 +131,9 @@ abstract class Middleware {
   /// [queue] is the work queue to use. If not provided, a default [WorkQueue] is used.
   factory Middleware.inlineQueue([InlineMiddlewareCallback? handler, WorkQueueBase? queue]) = _InlineQueueMiddleware;
 
+  /// Applies this middleware to the given handler.
+  ///
+  /// Returns a new handler with this middleware applied.
   Handler call(Handler innerSend);
 }
 
@@ -190,8 +196,10 @@ final class _InlineMiddleware implements Middleware {
 
 /// A pipeline of middleware that can process HTTP requests.
 class SendPipeline {
+  /// Create pipeline.
   const SendPipeline([this.depth = 0]);
 
+  @internal
   @visibleForTesting
   final int depth;
 
@@ -203,6 +211,7 @@ class SendPipeline {
   /// Returns a new pipeline with the middleware added.
   SendPipeline addMiddleware(Middleware middleware) => _Pipeline(middleware, addHandler, depth + 1);
 
+  /// Add handler for pipeline.
   @visibleForTesting
   Handler addHandler(Handler handler) => handler;
 }

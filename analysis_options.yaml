@@ -3,6 +3,10 @@ include: package:lints/recommended.yaml
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options
 
+formatter:
+  page_width: 120
+
 analyzer:
   errors:
     doc_directive_unknown: ignore
+    avoid_print: warning

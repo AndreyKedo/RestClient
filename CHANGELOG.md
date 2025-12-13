@@ -21,3 +21,15 @@
 * Full refactoring.
 * A middleware approach for processing requests and responses has been implemented.
 * Code cleanup.
+
+# 1.0.0+1
+
+* Added topics to Pubspec.
+
+# 1.0.0+2
+
+* Fix analyzer issue
+
+# 1.0.1
+
+* Fix [WorkQueueBase](https://pub.dev/documentation/http_middleware_client/latest/http_middleware_client/WorkQueueBase-class.html).

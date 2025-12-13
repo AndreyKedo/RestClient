@@ -1,7 +1,13 @@
 name: http_middleware_client
-description: An wrapper around package [http](https://pub.dev/packages/http) HTTP client that supports middleware for processing requests and responses.
-version: 1.0.0
+description: An wrapper around package http that supports middleware for processing requests and responses.
+version: 1.0.1
 repository: https://github.com/AndreyKedo/http_middleware
+
+topics:
+  - http
+  - client
+  - middleware
+  - network
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
