@@ -1,11 +1,24 @@
-## 0.0.1
+# 1.0.1+1
 
-* Initial release.
+* Fix docs.
 
-# 0.0.2
+# 1.0.1
 
-* Json utils change
-* Structure project change
+* Fix [WorkQueueBase](https://pub.dev/documentation/http_middleware_client/latest/http_middleware_client/WorkQueueBase-class.html).
+
+# 1.0.0+2
+
+* Fix analyzer issue
+
+# 1.0.0+1
+
+* Added topics to Pubspec.
+
+# 1.0.0
+
+* Full refactoring.
+* A middleware approach for processing requests and responses has been implemented.
+* Code cleanup.
 
 # 0.0.3
 
@@ -15,21 +28,11 @@
 * Used [lints](https://pub.dev/packages/lints) package.
 * [WIP] Doc
 
+# 0.0.2
 
-# 1.0.0
+* Json utils change
+* Structure project change
 
-* Full refactoring.
-* A middleware approach for processing requests and responses has been implemented.
-* Code cleanup.
+## 0.0.1
 
-# 1.0.0+1
-
-* Added topics to Pubspec.
-
-# 1.0.0+2
-
-* Fix analyzer issue
-
-# 1.0.1
-
-* Fix [WorkQueueBase](https://pub.dev/documentation/http_middleware_client/latest/http_middleware_client/WorkQueueBase-class.html).
+* Initial release.

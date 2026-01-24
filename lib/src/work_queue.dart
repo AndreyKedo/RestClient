@@ -211,6 +211,8 @@ abstract class TaskBase<T> {
 
 /// Concrete implementation of a work queue
 class WorkQueue extends WorkQueueBase {
+
+  /// {@nodoc}
   WorkQueue() : super(_SequentialWorkQueue.new);
 
   @override
@@ -219,7 +221,7 @@ class WorkQueue extends WorkQueueBase {
   }
 }
 
-/// Concrete implementation of a task for WorkQueue
+@internal
 class WorkQueueTask<T> extends TaskBase<T> {
   WorkQueueTask({required super.function});
 }
