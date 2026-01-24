@@ -1,3 +1,3 @@
 export 'src/http_methods.dart';
 export 'src/client.dart';
-export 'src/work_queue.dart' hide TaskScope;
+export 'src/work_queue.dart' hide TaskScope, WorkQueueTask;
